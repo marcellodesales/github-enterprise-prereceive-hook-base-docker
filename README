@@ -5,7 +5,7 @@ This is the base image from the Dockerfile https://help.github.com/enterprise/2.
 # Build
 
 ```
-$ docker build -t github-enterprise-pre-receive-hook-base .
+$ docker build -f Dockerfile.pre-receive -t github-enterprise-pre-receive-hook-base .
 Sending build context to Docker daemon 208.9 kB
 Step 1 : FROM pre-receive.dev
  ---> 174b3be1d2c9
