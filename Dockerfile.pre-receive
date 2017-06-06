@@ -8,7 +8,6 @@ RUN \
   sed -i "s/#AuthorizedKeysFile/AuthorizedKeysFile/g" /etc/ssh/sshd_config && \
   adduser git -D -G root -h /home/git -s /bin/bash && \
   passwd -d git && \
-  pip install pyyaml && \
   su git -c "mkdir /home/git/.ssh && \
   ssh-keygen -t rsa -b 4096 -f /home/git/.ssh/id_rsa -P '' && \
   mv /home/git/.ssh/id_rsa.pub /home/git/.ssh/authorized_keys && \
