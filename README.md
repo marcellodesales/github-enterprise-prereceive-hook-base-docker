@@ -5,7 +5,7 @@ This is the base image from the Dockerfile https://help.github.com/enterprise/2.
 # Build
 
 ```
-$ docker build -f Dockerfile.pre-receive -t github-enterprise-pre-receive-hook-base .
+$ docker build -t github-enterprise-pre-receive-hook-base .
 Sending build context to Docker daemon 208.9 kB
 Step 1 : FROM pre-receive.dev
  ---> 174b3be1d2c9
@@ -86,11 +86,15 @@ CONTAINER ID        IMAGE                            COMMAND               CREAT
 7966ae3a6b83        springboot-config-verification   "/usr/sbin/sshd -D"   7 seconds ago       Up 6 seconds        0.0.0.0:52311->22/tcp   ecstatic_panini
 ```
 
-Before you can push to the server, copy the ssh keys locally.
+Before you can push to the server, copy the ssh keys from the Git server locally so you can connect to it.
 
 ```
-$ docker cp data:/home/git/.ssh/id_rsa .
+$ docker cp data:/home/git/.ssh/id_rsa id_rsa_from_container
 ```
+
+* Make sure to remember that commands that needs to connect to the Git server requires the relative or full path to `id_rsa_from_container`.
+
+## Subsequent Work
 
 And finally, you can quickly iterate and test your verification script using the following:
 
@@ -113,16 +117,26 @@ This is the point where you have an ssh server simulating a git server and ready
 
 After setting up the ssh server above, you are ready to verify your script. You need to add the ssh server as a test remote origin to any directory from a cloned Github repository.
 
+Determine which ip address locally represents your machine. ifconfig can help you.
+
+* Linux: try eth0 or eth1
+
 ```
 $ git remote add test git@$(ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'):test.git
 ```
 
-The command gets the ip address of the host and adds as the server. You can verify if the server is reachable using the following command.
-
-> Note that you need to `id_rsa` you copied from the data container described in previous section.
+* Mac: try en0 or en1 depending on wifi or ethernet.
 
 ```
-$ GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 52311 -i ../id_rsa" git remote show test
+$ git remote add test git@$(ipconfig getifaddr en0):test.git
+```
+
+The command gets the ip address of the host and adds as the server. You can verify if the server is reachable using the following command.
+
+> Note that you need to `id_rsa_from_container` you copied from the data container described in previous section.
+
+```
+$ GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 52311 -i PATH_TO_ID/id_rsa_from_container" git remote show test
 Warning: Permanently added '[172.16.188.135]:52311' (ECDSA) to the list of known hosts.
 * remote test
   Fetch URL: git@172.16.188.135:test.git
@@ -133,7 +147,7 @@ Warning: Permanently added '[172.16.188.135]:52311' (ECDSA) to the list of known
 At this point, you are ready to proceed. Execute the push command and the pre-commit hook you developed will be automatically verifying your code. Note that if the pre-receive hook fails, the commit won't be accepted.
 
 ```
-$ GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 52311 -i ../id_rsa" git push -u test master              
+$ GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 52311 -i PATH_TO_ID/id_rsa_from_container" git push -u test master        
 Warning: Permanently added '[172.16.188.135]:52311' (ECDSA) to the list of known hosts.
 Counting objects: 214, done.
 Delta compression using up to 2 threads.
