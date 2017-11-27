@@ -2,6 +2,8 @@
 
 This is the base image from the Dockerfile https://help.github.com/enterprise/2.6/admin/guides/developer-workflow/creating-a-pre-receive-hook-script/#testing-pre-receive-scripts-locally
 
+[![resolution](http://dockeri.co/image/marcellodesales/github-enterprise-prereceive-hook-base "Github Enterprise Pre-Receive Hook Base Image")](https://hub.docker.com/r/intuit/spring-cloud-config-validator/)
+
 # Build
 
 ```
