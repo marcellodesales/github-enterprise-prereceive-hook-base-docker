@@ -12,7 +12,8 @@ RUN \
   ssh-keygen -t rsa -b 4096 -f /home/git/.ssh/id_rsa -P '' && \
   mv /home/git/.ssh/id_rsa.pub /home/git/.ssh/authorized_keys && \
   mkdir /home/git/test.git && \
-  git --bare init /home/git/test.git" 
+  echo "🐳 [\u@\h]:\W $" >> ~/.bashrc && \
+  git --bare init /home/git/test.git"
 
 VOLUME ["/home/git/.ssh", "/home/git/test.git/hooks"]
 
