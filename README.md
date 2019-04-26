@@ -66,26 +66,35 @@ Successfully built 96d7af8e0851
 
 You must run a container that holds the data, which means, having a script that does the validation.
 
+## Current Script version
+
+* Create a container to hold the validation script in a directory
+
 ```
-$ docker run --name data springboot-config-verification /bin/true
+$ docker run --name data intuit/intuit-spring-cloud-config-validator /bin/true
 ```
 
 After that, you can simply copy the verification script to the running container. This is step 7 from the
 github Enterprise documentation https://help.github.com/enterprise/2.6/admin/guides/developer-workflow/creating-a-pre-receive-hook-script/#testing-pre-receive-scripts-locally.
 
 ```
-$ docker cp validate-config-files.py data:/home/git/test.git/hooks/pre-receive
+$ docker cp validate_config_files.py data:/home/git/test.git/hooks/pre-receive
 ```
 
-At this point, you can start a github server that mimics Github Enterprise as follows:
+> **NOTE**: If you make local changes to this script, just repeat this command to update the version of the script.
+
+## Github Server Simulastor
+
+* At this point, you can start a github server that mimics Github Enterprise as follows:
 
 ```
-$ docker run -d -p 52311:22 --volumes-from data springboot-config-verification 
+$ docker run -d -p 52311:22 --volumes-from data intuit/intuit-spring-cloud-config-validator 
 7966ae3a6b83184cb38b6cbd1bbef22b35a52955f035f87b4f7a53b541352c2b
 
-$ docker ps
+$ docker ps | grep spring
 CONTAINER ID        IMAGE                            COMMAND               CREATED             STATUS              PORTS                   NAMES
-7966ae3a6b83        springboot-config-verification   "/usr/sbin/sshd -D"   7 seconds ago       Up 6 seconds        0.0.0.0:52311->22/tcp   ecstatic_panini
+6548271915ec        intuit/intuit-spring-cloud-config-validator                      "/usr/sbin/sshd -D"      5 seconds ago       Up 3 seconds        0.0.0.0:52311->22/tcp   sad_bohr
+f022dafe2a87        intuit/intuit-spring-cloud-config-validator                      "sh"                     43 minutes ago      Up 43 minutes                               xenodochial_rubin
 ```
 
 Before you can push to the server, copy the ssh keys from the Git server locally so you can connect to it.
@@ -121,13 +130,17 @@ After setting up the ssh server above, you are ready to verify your script. You 
 
 Determine which ip address locally represents your machine. ifconfig can help you.
 
-* Linux: try eth0 or eth1
+## Linux: 
+
+* try eth0 or eth1
 
 ```
 $ git remote add test git@$(ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'):test.git
 ```
 
-* Mac: try en0 or en1 depending on wifi or ethernet.
+## Mac
+
+* try en0 or en1 depending on wifi or ethernet.
 
 ```
 $ git remote add test git@$(ipconfig getifaddr en0):test.git
@@ -135,10 +148,10 @@ $ git remote add test git@$(ipconfig getifaddr en0):test.git
 
 The command gets the ip address of the host and adds as the server. You can verify if the server is reachable using the following command.
 
-> Note that you need to `id_rsa_from_container` you copied from the data container described in previous section.
+> **Note**: You need to `id_rsa_from_container` you copied from the data container described in previous section. Considering it is in your current directory (`$(pwd)/id_rsa_from_container`), use the following command to validate:
 
 ```
-$ GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 52311 -i PATH_TO_ID/id_rsa_from_container" git remote show test
+$ GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 52311 -i $(pwd)/id_rsa_from_container" git remote show test
 Warning: Permanently added '[172.16.188.135]:52311' (ECDSA) to the list of known hosts.
 * remote test
   Fetch URL: git@172.16.188.135:test.git
@@ -149,7 +162,7 @@ Warning: Permanently added '[172.16.188.135]:52311' (ECDSA) to the list of known
 At this point, you are ready to proceed. Execute the push command and the pre-commit hook you developed will be automatically verifying your code. Note that if the pre-receive hook fails, the commit won't be accepted.
 
 ```
-$ GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 52311 -i PATH_TO_ID/id_rsa_from_container" git push -u test master        
+$ GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 52311 -i $(pwd)/id_rsa_from_container" git push -u test master        
 Warning: Permanently added '[172.16.188.135]:52311' (ECDSA) to the list of known hosts.
 Counting objects: 214, done.
 Delta compression using up to 2 threads.
