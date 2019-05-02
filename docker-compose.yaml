@@ -15,3 +15,10 @@ services:
       context: ./python3
     ports:
       - "52312:22"
+
+  marcellodesales-git-pre-receive-hook-golang:
+    image: marcellodesales/git-pre-receive-hook:golang
+    build:
+      context: ./golang
+    ports:
+      - "52313:22"
