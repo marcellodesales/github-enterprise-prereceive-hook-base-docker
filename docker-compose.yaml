@@ -1,0 +1,17 @@
+version: "3.7"
+
+services:
+
+  marcellodesales-git-pre-receive-hook-python2:
+    image: marcellodesales/git-pre-receive-hook:python2
+    build:
+      context: ./python2
+    ports:
+      - "52311:22"
+
+  marcellodesales-git-pre-receive-hook-python3:
+    image: marcellodesales/git-pre-receive-hook:python3
+    build:
+      context: ./python3
+    ports:
+      - "52312:22"
