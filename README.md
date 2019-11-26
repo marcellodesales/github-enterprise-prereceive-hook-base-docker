@@ -1,46 +1,114 @@
-# Github Pre-receive Hook: Base Image
+# Github Pre-receive Hook: Base Images
 
-This is the base image from the Dockerfile https://help.github.com/enterprise/2.6/admin/guides/developer-workflow/creating-a-pre-receive-hook-script/#testing-pre-receive-scripts-locally
+A collection of base images based on the requirements from the Dockerfile for the Github Enterprise Pre-receive Hooks https://help.github.com/enterprise/2.6/admin/guides/developer-workflow/creating-a-pre-receive-hook-script/#testing-pre-receive-scripts-locally
 
 [![resolution](http://dockeri.co/image/marcellodesales/github-enterprise-prereceive-hook-base "Github Enterprise Pre-Receive Hook Base Image")](https://hub.docker.com/r/intuit/spring-cloud-config-validator/)
 
+# Base Images
+
+* Use one of the base images for the implementation of the hooks:
+
+## Golang
+
+* Golang 1.13.x
+
+```console
+$ docker run -ti marcellodesales/git-pre-receive-hook:golang go version
+go version go1.13.4 linux/amd64
+```
+
+## Python
+
+* Python 3 Base
+
+```console
+$ docker run -ti marcellodesales/git-pre-receive-hook:python3 python --version
+Python 3.6.9
+```
+
+* Python 2 Base
+
+```console
+$ docker run -ti marcellodesales/git-pre-receive-hook:python2 python --version
+Python 2.7.16
+```
+
 # Build
 
-```
-$ docker build -t github-enterprise-pre-receive-hook-base .
-Sending build context to Docker daemon 208.9 kB
-Step 1 : FROM pre-receive.dev
- ---> 174b3be1d2c9
-Step 2 : MAINTAINER Marcello_deSales@intuit.com
- ---> Running in e3965f484166
- ---> 5cafeb0f185b
-Removing intermediate container e3965f484166
-Step 3 : RUN apk add --no-cache py-pip &&   pip install pyyaml pyjavaproperties
- ---> Running in 38674126a032
-fetch http://alpine.gliderlabs.com/alpine/v3.3/main/x86_64/APKINDEX.tar.gz
-fetch http://alpine.gliderlabs.com/alpine/v3.3/community/x86_64/APKINDEX.tar.gz
-(1/7) Installing libbz2 (1.0.6-r4)
-(2/7) Installing libffi (3.2.1-r2)
-(3/7) Installing gdbm (1.11-r1)
-(4/7) Installing sqlite-libs (3.9.2-r0)
-(5/7) Installing python (2.7.12-r0)
-(6/7) Installing py-setuptools (18.8-r0)
-(7/7) Installing py-pip (7.1.2-r0)
-Executing busybox-1.24.2-r0.trigger
-OK: 81 MiB in 33 packages
-Collecting pyyaml
-  Downloading PyYAML-3.12.tar.gz (253kB)
-Collecting pyjavaproperties
-  Downloading pyjavaproperties-0.6.tar.gz
-Installing collected packages: pyyaml, pyjavaproperties
-  Running setup.py install for pyyaml
-  Running setup.py install for pyjavaproperties
-Successfully installed pyjavaproperties-0.6 pyyaml-3.12
-You are using pip version 7.1.2, however version 8.1.2 is available.
-You should consider upgrading via the 'pip install --upgrade pip' command.
- ---> 96d7af8e0851
-Removing intermediate container 38674126a032
-Successfully built 96d7af8e0851
+```console
+$ docker-compose build
+Building marcellodesales-git-pre-receive-hook-python2
+Step 1/5 : FROM marcellodesales/git-sshd-server
+ ---> 5ca61c1ab080
+Step 2/5 : LABEL maintainer="marcello.desales@gmail.com"
+ ---> Using cache
+ ---> 28897c326ab3
+Step 3/5 : RUN apk add --no-cache python &&     python -m ensurepip &&     rm -r /usr/lib/python*/ensurepip &&     pip install --upgrade pip setuptools &&     rm -r /root/.cache
+ ---> Using cache
+ ---> be1de5727086
+Step 4/5 : WORKDIR /home/git
+ ---> Using cache
+ ---> d4482b5fa6f5
+Step 5/5 : CMD ["/usr/sbin/sshd", "-D"]
+ ---> Using cache
+ ---> a517a25b2ee5
+
+Successfully built a517a25b2ee5
+Successfully tagged marcellodesales/git-pre-receive-hook:python2
+Building marcellodesales-git-pre-receive-hook-python3
+Step 1/5 : FROM marcellodesales/git-sshd-server
+ ---> 5ca61c1ab080
+Step 2/5 : LABEL maintainer="marcello.desales@gmail.com"
+ ---> Using cache
+ ---> 28897c326ab3
+Step 3/5 : RUN apk add --no-cache python3 &&     python3 -m ensurepip &&     rm -r /usr/lib/python*/ensurepip &&     pip3 install --upgrade pip setuptools &&     if [ ! -e /usr/bin/pip ]; then ln -s pip3 /usr/bin/pip ; fi &&     if [[ ! -e /usr/bin/python ]]; then ln -sf /usr/bin/python3 /usr/bin/python; fi &&     rm -r /root/.cache
+ ---> Using cache
+ ---> c1bd0babe9cd
+Step 4/5 : WORKDIR /home/git
+ ---> Using cache
+ ---> 81a620673d38
+Step 5/5 : CMD ["/usr/sbin/sshd", "-D"]
+ ---> Using cache
+ ---> 79bdc846a728
+
+Successfully built 79bdc846a728
+Successfully tagged marcellodesales/git-pre-receive-hook:python3
+Building marcellodesales-git-pre-receive-hook-golang
+Step 1/11 : FROM marcellodesales/git-sshd-server
+ ---> 5ca61c1ab080
+Step 2/11 : LABEL maintainer="marcello.desales@gmail.com"
+ ---> Using cache
+ ---> 28897c326ab3
+Step 3/11 : RUN apk add --no-cache 		ca-certificates
+ ---> Using cache
+ ---> 2895a1280db7
+Step 4/11 : RUN [ ! -e /etc/nsswitch.conf ] && echo 'hosts: files dns' > /etc/nsswitch.conf
+ ---> Using cache
+ ---> 4b2e05ca3755
+Step 5/11 : ENV GOLANG_VERSION 1.13.4
+ ---> Using cache
+ ---> e7537f5b6c69
+Step 6/11 : ENV GOLANG_VERSION_CHECKSUM 95dbeab442ee2746b9acf0934c8e2fc26414a0565c008631b04addb8c02e7624
+ ---> Using cache
+ ---> cec20e3fdef9
+Step 7/11 : RUN set -eux; 	apk add --no-cache --virtual .build-deps 		bash 		gcc 		musl-dev 		openssl 		go 	; 	export 		GOROOT_BOOTSTRAP="$(go env GOROOT)" 		GOOS="$(go env GOOS)" 		GOARCH="$(go env GOARCH)" 		GOHOSTOS="$(go env GOHOSTOS)" 		GOHOSTARCH="$(go env GOHOSTARCH)" 	; 	apkArch="$(apk --print-arch)"; 	case "$apkArch" in 		armhf) export GOARM='6' ;; 		x86) export GO386='387' ;; 	esac; 	wget -O go.tgz "https://golang.org/dl/go${GOLANG_VERSION}.src.tar.gz"; 	tar -C /usr/local -xzf go.tgz; 	rm go.tgz; 		cd /usr/local/go/src; 	./make.bash; 		rm -rf 	/usr/local/go/pkg/bootstrap 		/usr/local/go/pkg/obj 	; 	apk del .build-deps; 		export PATH="/usr/local/go/bin:$PATH"; 	go version
+ ---> Using cache
+ ---> 4f25306f0fb2
+Step 8/11 : ENV GOPATH /go
+ ---> Using cache
+ ---> b35569859951
+Step 9/11 : ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+ ---> Using cache
+ ---> d570af0898e3
+Step 10/11 : RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
+ ---> Using cache
+ ---> 627e0e9d7430
+Step 11/11 : WORKDIR /home/git
+ ---> Using cache
+ ---> 04b6376984ea
+
+Successfully built 04b6376984ea
+Successfully tagged marcellodesales/git-pre-receive-hook:golang
 ```
 
 # Extensions
